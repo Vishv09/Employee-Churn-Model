@@ -1,0 +1,130 @@
+---
+title: "PCA"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
+#####Importing the Dataset########
+emp_churn <- read.csv("C:/Users/Amisha Sancheti/Desktop/MITA sem2/Multivariate Analysis/Project/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+```
+
+
+```{r}
+str(emp_churn)
+```
+
+
+```{r}
+##Converting facrots in integers by level encoding.
+emp_churn$Attrition <-as.integer(as.factor(emp_churn$Attrition))
+emp_churn$BusinessTravel <-as.integer(as.factor(emp_churn$BusinessTravel))
+emp_churn$Department <-as.integer(as.factor(emp_churn$Department))
+emp_churn$EducationField <-as.integer(as.factor(emp_churn$EducationField))
+emp_churn$Gender <-as.integer(as.factor(emp_churn$Gender))
+emp_churn$JobRole <-as.integer(as.factor(emp_churn$JobRole))
+emp_churn$MaritalStatus <-as.integer(as.factor(emp_churn$MaritalStatus))
+emp_churn$Over18 <-as.integer(as.factor(emp_churn$Over18))
+emp_churn$OverTime <-as.integer(as.factor(emp_churn$OverTime))
+```
+```{r}
+emp_pca <- prcomp(emp_churn[ , which(apply(emp_churn, 2, var) != 0)],scale.=TRUE)
+emp_pca
+```
+```{r}
+summary(emp_pca)
+```
+
+
+```{r}
+(eigen_emp <- emp_pca$sdev^2)
+
+```
+```{r}
+names(eigen_emp) <- paste("PC",1:32,sep="")
+eigen_emp
+```
+```{r}
+sumlambdas <- sum(eigen_emp)
+sumlambdas
+```
+```{r}
+propvar <- eigen_emp/sumlambdas
+propvar
+```
+```{r}
+cumvar_emp <- cumsum(propvar)
+cumvar_emp
+```
+```{r}
+matlambdas <- rbind(eigen_emp,propvar,cumvar_emp)
+rownames(matlambdas) <- c("Eigenvalues","Prop. variance","Cum. prop. variance")
+round(matlambdas,3)
+```
+```{r}
+summary(emp_pca)
+```
+
+
+```{r}
+emp_pca$rotation
+```
+```{r}
+emp_pca$x
+```
+```{r}
+# Identifying the scores by their attrition
+attr_pca <- cbind(data.frame(emp_churn$Attrition),emp_pca$x)
+attr_pca
+```
+```{r}
+tabmeansPC <- aggregate(attr_pca[,2:32],by=list(Attrition=emp_churn$Attrition),mean)
+tabmeansPC
+```
+```{r}
+tabfmeans <- t(tabmeansPC[,-1])
+tabfmeans
+```
+```{r}
+colnames(tabfmeans) <- t(as.vector(tabmeansPC[1]))
+tabfmeans
+```
+```{r}
+tabsdsPC <- aggregate(attr_pca[,2:32],by=list(Attrition=emp_churn$Attrition),sd)
+tabfsds <- t(tabsdsPC[,-1])
+colnames(tabfsds) <- t(as.vector(tabsdsPC[1]))
+tabfsds
+```
+```{r}
+#perfroming t-test on first 5 PCA
+t.test(PC1~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+t.test(PC2~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+t.test(PC3~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+t.test(PC4~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+t.test(PC5~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+#perfroming f-test on first 5 PCA
+var.test(PC1~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+var.test(PC2~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+var.test(PC3~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+var.test(PC4~emp_churn$Attrition,data=attr_pca)
+```
+```{r}
+var.test(PC5~emp_churn$Attrition,data=attr_pca)
+```
+
